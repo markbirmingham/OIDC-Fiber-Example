@@ -1,5 +1,3 @@
-// Save this file in ./platform/authenticator/auth.go
-
 package main
 
 import (

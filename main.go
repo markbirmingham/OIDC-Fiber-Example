@@ -11,6 +11,10 @@ import (
 	"github.com/joho/godotenv"
 )
 
+var (
+	store = session.New()
+)
+
 func main() {
 
 	if err := godotenv.Load(); err != nil {
@@ -33,18 +37,16 @@ func main() {
 	// Use gob register to store custom types in our cookies
 	gob.Register(map[string]interface{}{})
 
-	store := session.New()
-
 	router.Static("/public", "./static")
 
 	router.Get("/", func(c *fiber.Ctx) error {
 		return c.Render("home", nil)
 	})
 
-	router.Get("/login", Login(store, auth))
-	router.Get("/callback", Callback(store, auth))
-	router.Get("/user", isAuthenticated(store), User(store))
-	router.Get("/protected", isAuthenticated(store), Protected(store))
+	router.Get("/login", Login(auth))
+	router.Get("/callback", Callback(auth))
+	router.Get("/user", isAuthenticated, User)
+	router.Get("/protected", isAuthenticated, Protected)
 	router.Get("/logout", Logout)
 	router.Get("/bye", func(c *fiber.Ctx) error {
 		return c.Render("logout", nil)
@@ -53,18 +55,17 @@ func main() {
 	log.Fatal(router.Listen(":9000"))
 }
 
-func isAuthenticated(store *session.Store) fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		session, err := store.Get(c)
-		if err != nil {
-			panic(err)
-		}
+func isAuthenticated(c *fiber.Ctx) error {
 
-		profile := session.Get("profile")
-
-		if profile == nil {
-			return c.Redirect("/", fiber.StatusSeeOther)
-		}
-		return c.Next()
+	session, err := store.Get(c)
+	if err != nil {
+		panic(err)
 	}
+
+	profile := session.Get("profile")
+
+	if profile == nil {
+		return c.Redirect("/", fiber.StatusSeeOther)
+	}
+	return c.Next()
 }
