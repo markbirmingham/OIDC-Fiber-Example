@@ -1,13 +1,10 @@
-// Save this file in ./web/app/callback/callback.go
-
 package main
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/session"
 )
 
-func Callback(store *session.Store, auth *Authenticator) fiber.Handler {
+func Callback(auth *Authenticator) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		session, err := store.Get(c)
 		if err != nil {

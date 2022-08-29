@@ -7,10 +7,9 @@ import (
 	"os"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/session"
 )
 
-func Login(store *session.Store, auth *Authenticator) fiber.Handler {
+func Login(auth *Authenticator) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		state, err := generateRandomState()
 		if err != nil {
@@ -66,27 +65,23 @@ func Logout(c *fiber.Ctx) error {
 	return c.Redirect(logoutUrl.String(), fiber.StatusTemporaryRedirect)
 }
 
-func User(store *session.Store) fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		session, err := store.Get(c)
-		if err != nil {
-			panic(err)
-		}
-
-		profile := session.Get("profile")
-
-		return c.Status(fiber.StatusOK).Render("user", profile)
+func User(c *fiber.Ctx) error {
+	session, err := store.Get(c)
+	if err != nil {
+		panic(err)
 	}
+
+	profile := session.Get("profile")
+
+	return c.Status(fiber.StatusOK).Render("user", profile)
 }
 
-func Protected(store *session.Store) fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		session, err := store.Get(c)
-		if err != nil {
-			panic(err)
-		}
-		profile := session.Get("profile")
-
-		return c.Status(fiber.StatusOK).Render("protected", profile)
+func Protected(c *fiber.Ctx) error {
+	session, err := store.Get(c)
+	if err != nil {
+		panic(err)
 	}
+	profile := session.Get("profile")
+
+	return c.Status(fiber.StatusOK).Render("protected", profile)
 }
